@@ -1,6 +1,7 @@
 package com.minsun.analyzer;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,14 @@ public final class MermaidRenderer {
             return sb.toString();
         }
 
+        // 라벨 중복 방지: 렌더 대상 모든 노드의 공통 패키지 접두어를 떼어 상대 경로를 라벨로 쓴다.
+        // (예: com.acme.a.service / com.acme.b.service → "a.service" / "b.service" 로 구분)
+        Set<String> allNodes = new LinkedHashSet<>();
+        for (List<String> scc : cycles) {
+            allNodes.addAll(scc);
+        }
+        String commonPrefix = BasePackageInferrer.commonPackagePrefix(allNodes);
+
         for (int i = 0; i < cycles.size(); i++) {
             List<String> scc = cycles.get(i);
             Set<String> members = new HashSet<>(scc);
@@ -48,7 +57,7 @@ public final class MermaidRenderer {
             // 노드 선언 (SCC 정렬 순서)
             for (String node : scc) {
                 sb.append("    ").append(nodeId(node))
-                    .append("[\"").append(simpleName(node)).append("\"]\n");
+                    .append("[\"").append(relativeLabel(node, commonPrefix)).append("\"]\n");
             }
             // SCC 내부 간선만 (from 정렬 순서 → successors 정렬 순서)
             for (String from : scc) {
@@ -69,7 +78,21 @@ public final class MermaidRenderer {
         return "n_" + fqn.replaceAll("[^a-zA-Z0-9]", "_");
     }
 
-    /** FQN 에서 단순 클래스명만 추출 (라벨용). */
+    /**
+     * 공통 패키지 접두어를 뗀 상대 경로 라벨.
+     * 공통 접두어가 없으면 전체 이름을, 뗄 것이 없으면(노드 == 접두어) 단순명으로 폴백한다.
+     */
+    private static String relativeLabel(String fqn, String commonPrefix) {
+        if (!commonPrefix.isEmpty() && fqn.startsWith(commonPrefix + ".")) {
+            String rel = fqn.substring(commonPrefix.length() + 1);
+            if (!rel.isEmpty()) {
+                return rel;
+            }
+        }
+        return commonPrefix.isEmpty() ? fqn : simpleName(fqn);
+    }
+
+    /** FQN 에서 단순 클래스명만 추출 (라벨용 폴백). */
     private static String simpleName(String fqn) {
         int lastDot = fqn.lastIndexOf('.');
         return lastDot < 0 ? fqn : fqn.substring(lastDot + 1);
