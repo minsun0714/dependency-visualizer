@@ -40,7 +40,7 @@ class VisualizeDependenciesFunctionalTest {
         BuildResult result = GradleRunner.create()
             .withProjectDir(projectDir.toFile())
             .withPluginClasspath()
-            .withArguments("visualizeDependencies")
+            .withArguments("visualizeDependencies", "--configuration-cache")
             .build();
 
         assertTrue(result.getOutput().contains("패키지 순환 1개"),

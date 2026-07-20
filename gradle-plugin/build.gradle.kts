@@ -1,13 +1,15 @@
+import org.gradle.plugin.compatibility.compatibility
+
 plugins {
     `java-gradle-plugin`
     `maven-publish`
-    id("com.gradle.plugin-publish") version "1.3.0"
+    id("com.gradle.plugin-publish") version "2.1.1"
 }
 
 // Plugin Portal 은 정식 릴리스만 받는다(SNAPSHOT 금지). 네임스페이스는
 // GitHub 계정에 매핑되는 io.github.<user> 를 쓴다.
 group = "io.github.minsun0714"
-version = "0.1.0"
+version = "0.1.1"
 
 java {
     toolchain {
@@ -54,6 +56,13 @@ gradlePlugin {
             description = "Java 프로젝트의 순환 의존(circular dependency)을 검출해 " +
                 "Mermaid/HTML 로 시각화하는 Gradle 플러그인"
             tags = listOf("dependency", "circular-dependency", "visualization", "mermaid")
+            // 태스크가 실행 시점에 project 참조 없이 lazy property + 순수 자바만
+            // 사용하므로 configuration cache 와 호환된다.
+            compatibility {
+                features {
+                    configurationCache = true
+                }
+            }
         }
     }
 }
