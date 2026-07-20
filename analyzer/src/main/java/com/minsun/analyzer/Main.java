@@ -2,6 +2,7 @@ package com.minsun.analyzer;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
 
@@ -20,5 +21,18 @@ public class Main {
         System.out.println("Nodes: " + graph.nodeCount() + ", Edges: " + graph.edgeCount());
         System.out.println("-".repeat(50));
         graph.toEdgeStrings().forEach(System.out::println);
+
+        List<List<String>> cycles = TarjanScc.cycles(graph);
+        System.out.println();
+        System.out.println("Circular dependencies (" + cycles.size() + " SCC):");
+        System.out.println("-".repeat(50));
+        if (cycles.isEmpty()) {
+            System.out.println("(none)");
+        } else {
+            for (int i = 0; i < cycles.size(); i++) {
+                List<String> scc = cycles.get(i);
+                System.out.println("[" + (i + 1) + "] " + scc.size() + " classes: " + scc);
+            }
+        }
     }
 }

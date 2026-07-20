@@ -92,6 +92,20 @@ class SampleProjectEdgesTest {
             () -> "구현 간선 누락. 실제: " + edges);
     }
 
+    @Test
+    @DisplayName("샘플의 설계된 순환 SCC 2개를 정확히 검출한다 (end-to-end)")
+    void detectsDesignedCycles() throws IOException {
+        DependencyGraph graph = new EdgeExtractor(sampleSrc(), BASE_PACKAGE).extract();
+
+        List<List<String>> cycles = TarjanScc.cycles(graph);
+
+        // SCC A: user ↔ order, SCC B: product 내부. 다른 순환은 없어야 함.
+        assertEquals(List.of(
+            List.of("com.minsun.sample.order.OrderService", "com.minsun.sample.user.UserService"),
+            List.of("com.minsun.sample.product.InventoryService", "com.minsun.sample.product.ProductService")
+        ), cycles, () -> "검출된 순환: " + cycles);
+    }
+
     /**
      * sample-project 소스 루트를 찾는다.
      * 테스트 작업 디렉토리는 실행 위치(analyzer 모듈 or 루트)에 따라 달라질 수 있어 후보를 순회한다.
