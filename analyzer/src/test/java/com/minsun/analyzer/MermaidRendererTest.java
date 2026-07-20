@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("MermaidRenderer: 순환 SCC → Mermaid flowchart")
 class MermaidRendererTest {
@@ -67,6 +68,45 @@ class MermaidRendererTest {
                 n_com_foo_B --> n_com_foo_A
               end
             """, mermaid);
+    }
+
+    @Test
+    @DisplayName("끝조각이 같은 서로 다른 패키지는 상대 경로로 구분해 라벨링한다")
+    void disambiguatesSameLeafPackages() {
+        DependencyGraph graph = new DependencyGraph();
+        graph.addEdge("com.x.a.service", "com.x.b.service");
+        graph.addEdge("com.x.b.service", "com.x.a.service");
+
+        String mermaid = MermaidRenderer.renderCycles(graph, TarjanScc.cycles(graph), "packages");
+
+        // 둘 다 "service" 로 뭉개지지 않고 공통 접두어(com.x)를 뗀 상대 경로로 구분된다.
+        assertTrue(mermaid.contains("[\"a.service\"]"), () -> "a.service 라벨이 있어야 한다:\n" + mermaid);
+        assertTrue(mermaid.contains("[\"b.service\"]"), () -> "b.service 라벨이 있어야 한다:\n" + mermaid);
+    }
+
+    @Test
+    @DisplayName("동일 끝조각 3개(exception)도 각각 상대 경로로 구분된다")
+    void disambiguatesThreeSameLeafPackages() {
+        DependencyGraph graph = new DependencyGraph();
+        graph.addEdge("com.m.platform.cafe24.exception", "com.m.shared.exception");
+        graph.addEdge("com.m.shared.exception", "com.m.platform.cafe24.exception");
+
+        String mermaid = MermaidRenderer.renderCycles(graph, TarjanScc.cycles(graph), "packages");
+
+        assertTrue(mermaid.contains("[\"platform.cafe24.exception\"]"), () -> mermaid);
+        assertTrue(mermaid.contains("[\"shared.exception\"]"), () -> mermaid);
+    }
+
+    @Test
+    @DisplayName("단일 패키지 self-loop 는 단순명으로 폴백한다")
+    void singlePackageSelfLoopFallsBackToSimpleName() {
+        DependencyGraph graph = new DependencyGraph();
+        graph.addEdge("com.foo.bar", "com.foo.bar"); // self-loop
+
+        String mermaid = MermaidRenderer.renderCycles(graph, TarjanScc.cycles(graph), "packages");
+
+        // 노드가 하나뿐이라 공통 접두어가 전체와 같아짐 → 단순명 "bar" 로 폴백.
+        assertTrue(mermaid.contains("[\"bar\"]"), () -> mermaid);
     }
 
     @Test

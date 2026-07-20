@@ -9,7 +9,7 @@ plugins {
 // Plugin Portal 은 정식 릴리스만 받는다(SNAPSHOT 금지). 네임스페이스는
 // GitHub 계정에 매핑되는 io.github.<user> 를 쓴다.
 group = "io.github.minsun0714"
-version = "0.1.2"
+version = "0.1.3"
 
 java {
     toolchain {

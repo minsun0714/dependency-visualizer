@@ -1,57 +1,57 @@
 flowchart LR
   subgraph scc0 ["Cycle 1 - 2 classes"]
-    n_com_minsun_sample_cycles_ctor_CtorA["CtorA"]
-    n_com_minsun_sample_cycles_ctor_CtorB["CtorB"]
+    n_com_minsun_sample_cycles_ctor_CtorA["cycles.ctor.CtorA"]
+    n_com_minsun_sample_cycles_ctor_CtorB["cycles.ctor.CtorB"]
     n_com_minsun_sample_cycles_ctor_CtorA --> n_com_minsun_sample_cycles_ctor_CtorB
     n_com_minsun_sample_cycles_ctor_CtorB --> n_com_minsun_sample_cycles_ctor_CtorA
   end
   subgraph scc1 ["Cycle 2 - 3 classes"]
-    n_com_minsun_sample_cycles_figure8_F8A["F8A"]
-    n_com_minsun_sample_cycles_figure8_F8B["F8B"]
-    n_com_minsun_sample_cycles_figure8_F8Center["F8Center"]
+    n_com_minsun_sample_cycles_figure8_F8A["cycles.figure8.F8A"]
+    n_com_minsun_sample_cycles_figure8_F8B["cycles.figure8.F8B"]
+    n_com_minsun_sample_cycles_figure8_F8Center["cycles.figure8.F8Center"]
     n_com_minsun_sample_cycles_figure8_F8A --> n_com_minsun_sample_cycles_figure8_F8Center
     n_com_minsun_sample_cycles_figure8_F8B --> n_com_minsun_sample_cycles_figure8_F8Center
     n_com_minsun_sample_cycles_figure8_F8Center --> n_com_minsun_sample_cycles_figure8_F8A
     n_com_minsun_sample_cycles_figure8_F8Center --> n_com_minsun_sample_cycles_figure8_F8B
   end
   subgraph scc2 ["Cycle 3 - 4 classes"]
-    n_com_minsun_sample_cycles_fournode_Ring4A["Ring4A"]
-    n_com_minsun_sample_cycles_fournode_Ring4B["Ring4B"]
-    n_com_minsun_sample_cycles_fournode_Ring4C["Ring4C"]
-    n_com_minsun_sample_cycles_fournode_Ring4D["Ring4D"]
+    n_com_minsun_sample_cycles_fournode_Ring4A["cycles.fournode.Ring4A"]
+    n_com_minsun_sample_cycles_fournode_Ring4B["cycles.fournode.Ring4B"]
+    n_com_minsun_sample_cycles_fournode_Ring4C["cycles.fournode.Ring4C"]
+    n_com_minsun_sample_cycles_fournode_Ring4D["cycles.fournode.Ring4D"]
     n_com_minsun_sample_cycles_fournode_Ring4A --> n_com_minsun_sample_cycles_fournode_Ring4B
     n_com_minsun_sample_cycles_fournode_Ring4B --> n_com_minsun_sample_cycles_fournode_Ring4C
     n_com_minsun_sample_cycles_fournode_Ring4C --> n_com_minsun_sample_cycles_fournode_Ring4D
     n_com_minsun_sample_cycles_fournode_Ring4D --> n_com_minsun_sample_cycles_fournode_Ring4A
   end
   subgraph scc3 ["Cycle 4 - 2 classes"]
-    n_com_minsun_sample_cycles_generic_GenA["GenA"]
-    n_com_minsun_sample_cycles_generic_GenB["GenB"]
+    n_com_minsun_sample_cycles_generic_GenA["cycles.generic.GenA"]
+    n_com_minsun_sample_cycles_generic_GenB["cycles.generic.GenB"]
     n_com_minsun_sample_cycles_generic_GenA --> n_com_minsun_sample_cycles_generic_GenB
     n_com_minsun_sample_cycles_generic_GenB --> n_com_minsun_sample_cycles_generic_GenA
   end
   subgraph scc4 ["Cycle 5 - 2 classes"]
-    n_com_minsun_sample_cycles_inheritance_InhA["InhA"]
-    n_com_minsun_sample_cycles_inheritance_InhB["InhB"]
+    n_com_minsun_sample_cycles_inheritance_InhA["cycles.inheritance.InhA"]
+    n_com_minsun_sample_cycles_inheritance_InhB["cycles.inheritance.InhB"]
     n_com_minsun_sample_cycles_inheritance_InhA --> n_com_minsun_sample_cycles_inheritance_InhB
     n_com_minsun_sample_cycles_inheritance_InhB --> n_com_minsun_sample_cycles_inheritance_InhA
   end
   subgraph scc5 ["Cycle 6 - 2 classes"]
-    n_com_minsun_sample_cycles_methodparam_MpA["MpA"]
-    n_com_minsun_sample_cycles_methodparam_MpB["MpB"]
+    n_com_minsun_sample_cycles_methodparam_MpA["cycles.methodparam.MpA"]
+    n_com_minsun_sample_cycles_methodparam_MpB["cycles.methodparam.MpB"]
     n_com_minsun_sample_cycles_methodparam_MpA --> n_com_minsun_sample_cycles_methodparam_MpB
     n_com_minsun_sample_cycles_methodparam_MpB --> n_com_minsun_sample_cycles_methodparam_MpA
   end
   subgraph scc6 ["Cycle 7 - 2 classes"]
-    n_com_minsun_sample_cycles_newexpr_NewA["NewA"]
-    n_com_minsun_sample_cycles_newexpr_NewB["NewB"]
+    n_com_minsun_sample_cycles_newexpr_NewA["cycles.newexpr.NewA"]
+    n_com_minsun_sample_cycles_newexpr_NewB["cycles.newexpr.NewB"]
     n_com_minsun_sample_cycles_newexpr_NewA --> n_com_minsun_sample_cycles_newexpr_NewB
     n_com_minsun_sample_cycles_newexpr_NewB --> n_com_minsun_sample_cycles_newexpr_NewA
   end
   subgraph scc7 ["Cycle 8 - 3 classes"]
-    n_com_minsun_sample_cycles_tangled_TangA["TangA"]
-    n_com_minsun_sample_cycles_tangled_TangB["TangB"]
-    n_com_minsun_sample_cycles_tangled_TangC["TangC"]
+    n_com_minsun_sample_cycles_tangled_TangA["cycles.tangled.TangA"]
+    n_com_minsun_sample_cycles_tangled_TangB["cycles.tangled.TangB"]
+    n_com_minsun_sample_cycles_tangled_TangC["cycles.tangled.TangC"]
     n_com_minsun_sample_cycles_tangled_TangA --> n_com_minsun_sample_cycles_tangled_TangB
     n_com_minsun_sample_cycles_tangled_TangA --> n_com_minsun_sample_cycles_tangled_TangC
     n_com_minsun_sample_cycles_tangled_TangB --> n_com_minsun_sample_cycles_tangled_TangC
@@ -59,28 +59,28 @@ flowchart LR
     n_com_minsun_sample_cycles_tangled_TangC --> n_com_minsun_sample_cycles_tangled_TangB
   end
   subgraph scc8 ["Cycle 9 - 3 classes"]
-    n_com_minsun_sample_cycles_threenode_RingA["RingA"]
-    n_com_minsun_sample_cycles_threenode_RingB["RingB"]
-    n_com_minsun_sample_cycles_threenode_RingC["RingC"]
+    n_com_minsun_sample_cycles_threenode_RingA["cycles.threenode.RingA"]
+    n_com_minsun_sample_cycles_threenode_RingB["cycles.threenode.RingB"]
+    n_com_minsun_sample_cycles_threenode_RingC["cycles.threenode.RingC"]
     n_com_minsun_sample_cycles_threenode_RingA --> n_com_minsun_sample_cycles_threenode_RingB
     n_com_minsun_sample_cycles_threenode_RingB --> n_com_minsun_sample_cycles_threenode_RingC
     n_com_minsun_sample_cycles_threenode_RingC --> n_com_minsun_sample_cycles_threenode_RingA
   end
   subgraph scc9 ["Cycle 10 - 2 classes"]
-    n_com_minsun_sample_cycles_twonode_DirectA["DirectA"]
-    n_com_minsun_sample_cycles_twonode_DirectB["DirectB"]
+    n_com_minsun_sample_cycles_twonode_DirectA["cycles.twonode.DirectA"]
+    n_com_minsun_sample_cycles_twonode_DirectB["cycles.twonode.DirectB"]
     n_com_minsun_sample_cycles_twonode_DirectA --> n_com_minsun_sample_cycles_twonode_DirectB
     n_com_minsun_sample_cycles_twonode_DirectB --> n_com_minsun_sample_cycles_twonode_DirectA
   end
   subgraph scc10 ["Cycle 11 - 2 classes"]
-    n_com_minsun_sample_order_OrderService["OrderService"]
-    n_com_minsun_sample_user_UserService["UserService"]
+    n_com_minsun_sample_order_OrderService["order.OrderService"]
+    n_com_minsun_sample_user_UserService["user.UserService"]
     n_com_minsun_sample_order_OrderService --> n_com_minsun_sample_user_UserService
     n_com_minsun_sample_user_UserService --> n_com_minsun_sample_order_OrderService
   end
   subgraph scc11 ["Cycle 12 - 2 classes"]
-    n_com_minsun_sample_product_InventoryService["InventoryService"]
-    n_com_minsun_sample_product_ProductService["ProductService"]
+    n_com_minsun_sample_product_InventoryService["product.InventoryService"]
+    n_com_minsun_sample_product_ProductService["product.ProductService"]
     n_com_minsun_sample_product_InventoryService --> n_com_minsun_sample_product_ProductService
     n_com_minsun_sample_product_ProductService --> n_com_minsun_sample_product_InventoryService
   end

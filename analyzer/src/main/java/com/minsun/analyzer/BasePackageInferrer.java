@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,13 +28,22 @@ public final class BasePackageInferrer {
 
     /** 소스 루트를 훑어 공통 패키지 접두어를 추론한다. 실패 시 {@code ""}. */
     public static String infer(Path sourceRoot) throws IOException {
-        List<String[]> packages = new ArrayList<>();
+        List<String> packages = new ArrayList<>();
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
             for (Path file : paths.filter(p -> p.toString().endsWith(".java")).toList()) {
-                declaredPackage(file).ifPresent(pkg -> packages.add(pkg.split("\\.")));
+                declaredPackage(file).ifPresent(packages::add);
             }
         }
-        return commonPrefix(packages);
+        return commonPackagePrefix(packages);
+    }
+
+    /** 점(.)으로 구분된 이름들의 세그먼트 단위 공통 접두어. 공통이 없으면 {@code ""}. */
+    public static String commonPackagePrefix(Collection<String> dottedNames) {
+        List<String[]> segmented = new ArrayList<>();
+        for (String name : dottedNames) {
+            segmented.add(name.split("\\."));
+        }
+        return commonPrefix(segmented);
     }
 
     private static java.util.Optional<String> declaredPackage(Path file) throws IOException {
