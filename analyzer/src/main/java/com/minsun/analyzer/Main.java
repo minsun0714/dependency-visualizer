@@ -34,5 +34,10 @@ public class Main {
                 System.out.println("[" + (i + 1) + "] " + scc.size() + " classes: " + scc);
             }
         }
+
+        System.out.println();
+        System.out.println("Mermaid:");
+        System.out.println("-".repeat(50));
+        System.out.print(MermaidRenderer.renderCycles(graph, cycles));
     }
 }
