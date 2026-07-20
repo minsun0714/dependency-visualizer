@@ -22,7 +22,7 @@ class VisualizeDependenciesFunctionalTest {
         write(projectDir, "build.gradle.kts", """
             plugins {
                 java
-                id("com.minsun.dependency-visualizer")
+                id("io.github.minsun0714.dependency-visualizer")
             }
             """);
         // com.demo.a.A <-> com.demo.b.B (패키지 a <-> b 순환)
