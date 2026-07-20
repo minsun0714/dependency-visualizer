@@ -1,12 +1,13 @@
 package com.minsun.sample.product;
 
+import com.minsun.sample.shared.BaseController;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class ProductController {
+public class ProductController extends BaseController {
 
     private final ProductService productService;
 
