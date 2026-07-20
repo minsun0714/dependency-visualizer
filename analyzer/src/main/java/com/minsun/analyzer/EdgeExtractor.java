@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.stream.Stream;
 
 /**
@@ -44,19 +43,19 @@ public class EdgeExtractor {
     }
 
     /**
-     * 소스 루트 전체를 분석해 "from -> to" 간선을 정렬된 집합으로 반환한다.
-     * (중복 제거 + 안정적 출력 순서)
+     * 소스 루트 전체를 분석해 클래스 간 의존 그래프를 만들어 반환한다.
+     * (중복 간선 제거 + 결정적 순서)
      */
-    public TreeSet<String> extract() throws IOException {
-        TreeSet<String> edges = new TreeSet<>();
+    public DependencyGraph extract() throws IOException {
+        DependencyGraph graph = new DependencyGraph();
         for (Path file : collectJavaFiles()) {
             CompilationUnit cu = parser.parse(file).getResult().orElseThrow(
                 () -> new IllegalStateException("파싱 실패: " + file));
             for (ClassOrInterfaceDeclaration type : cu.findAll(ClassOrInterfaceDeclaration.class)) {
-                extractEdges(type, edges);
+                extractEdges(type, graph);
             }
         }
-        return edges;
+        return graph;
     }
 
     /**
@@ -71,40 +70,40 @@ public class EdgeExtractor {
      * </ul>
      * 위 모든 타입의 <b>제네릭 타입 인자</b>({@code List<Order>} 의 Order 등)도 재귀적으로 본다.
      */
-    void extractEdges(ClassOrInterfaceDeclaration type, TreeSet<String> edges) {
+    void extractEdges(ClassOrInterfaceDeclaration type, DependencyGraph graph) {
         String source = type.getFullyQualifiedName().orElse(type.getNameAsString());
 
         // 1. 필드 주입
         for (FieldDeclaration field : type.getFields()) {
-            tryAddEdge(source, field.getElementType(), edges);
+            tryAddEdge(source, field.getElementType(), graph);
         }
 
         // 2. 생성자 주입 파라미터
         for (ConstructorDeclaration ctor : type.getConstructors()) {
             for (Parameter param : ctor.getParameters()) {
-                tryAddEdge(source, param.getType(), edges);
+                tryAddEdge(source, param.getType(), graph);
             }
         }
 
         // 3. 메서드 시그니처 (파라미터 + 반환 타입). void/primitive 반환은 resolve 단계에서 걸러진다.
         for (MethodDeclaration method : type.getMethods()) {
-            tryAddEdge(source, method.getType(), edges);
+            tryAddEdge(source, method.getType(), graph);
             for (Parameter param : method.getParameters()) {
-                tryAddEdge(source, param.getType(), edges);
+                tryAddEdge(source, param.getType(), graph);
             }
         }
 
         // 4. 상속 / 구현
         for (ClassOrInterfaceType extended : type.getExtendedTypes()) {
-            tryAddEdge(source, extended, edges);
+            tryAddEdge(source, extended, graph);
         }
         for (ClassOrInterfaceType implemented : type.getImplementedTypes()) {
-            tryAddEdge(source, implemented, edges);
+            tryAddEdge(source, implemented, graph);
         }
 
         // 5. 객체 생성 (new Xxx()) — 메서드 본문 등에서 직접 생성하는 의존
         for (ObjectCreationExpr creation : type.findAll(ObjectCreationExpr.class)) {
-            tryAddEdge(source, creation.getType(), edges);
+            tryAddEdge(source, creation.getType(), graph);
         }
     }
 
@@ -112,9 +111,9 @@ public class EdgeExtractor {
      * 타입 노드를 resolve 해서 내부 타입이면 간선으로 추가한다.
      * resolve 실패(외부 타입 등)는 조용히 건너뛴다.
      */
-    private void tryAddEdge(String source, Type typeNode, TreeSet<String> edges) {
+    private void tryAddEdge(String source, Type typeNode, DependencyGraph graph) {
         try {
-            addResolved(source, typeNode.resolve(), edges);
+            addResolved(source, typeNode.resolve(), graph);
         } catch (RuntimeException e) {
             // 사전(TypeSolver)에 없는 타입 등 resolve 실패 → 내부 타입 아님, 무시
         }
@@ -125,7 +124,7 @@ public class EdgeExtractor {
      * 제네릭 타입 인자({@code Map<Long, Product>} 의 Product 등)도 재귀적으로 본다.
      * 자기 자신 참조는 제외한다.
      */
-    private void addResolved(String source, ResolvedType resolved, TreeSet<String> edges) {
+    private void addResolved(String source, ResolvedType resolved, DependencyGraph graph) {
         if (!resolved.isReferenceType()) {
             return; // primitive / void / 타입변수 등은 의존 대상이 아님
         }
@@ -133,12 +132,12 @@ public class EdgeExtractor {
 
         String target = ref.getQualifiedName();
         if (target.startsWith(basePackage) && !target.equals(source)) {
-            edges.add(source + " -> " + target);
+            graph.addEdge(source, target);
         }
 
         // 제네릭 타입 인자 재귀 (List<Order>, Optional<User>, Map<Long, Product> ...)
         for (ResolvedType typeArg : ref.typeParametersValues()) {
-            addResolved(source, typeArg, edges);
+            addResolved(source, typeArg, graph);
         }
     }
 

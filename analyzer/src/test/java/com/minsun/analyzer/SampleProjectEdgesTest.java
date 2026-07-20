@@ -67,7 +67,7 @@ class SampleProjectEdgesTest {
     @Test
     @DisplayName("샘플 전체 간선이 기대 집합과 정확히 일치한다")
     void extractsExactlyExpectedEdges() throws IOException {
-        TreeSet<String> edges = new EdgeExtractor(sampleSrc(), BASE_PACKAGE).extract();
+        TreeSet<String> edges = new EdgeExtractor(sampleSrc(), BASE_PACKAGE).extract().toEdgeStrings();
 
         assertEquals(EXPECTED_EDGES, edges,
             "샘플 간선이 기대 집합과 달라짐 — 샘플 수정 시 EXPECTED_EDGES 도 갱신 필요");
@@ -76,7 +76,7 @@ class SampleProjectEdgesTest {
     @Test
     @DisplayName("생성자 주입 / 상속 / 구현 간선이 각각 잡힌다")
     void extractsNonFieldEdges() throws IOException {
-        TreeSet<String> edges = new EdgeExtractor(sampleSrc(), BASE_PACKAGE).extract();
+        TreeSet<String> edges = new EdgeExtractor(sampleSrc(), BASE_PACKAGE).extract().toEdgeStrings();
 
         // 생성자 주입 (NotificationService 는 필드 주입이 아니라 명시적 생성자로만 의존을 표현)
         assertTrue(edges.contains(

@@ -2,7 +2,6 @@ package com.minsun.analyzer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.TreeSet;
 
 public class Main {
 
@@ -16,10 +15,10 @@ public class Main {
         System.out.println("Analyzing " + SAMPLE_SRC + " ...");
         System.out.println();
 
-        TreeSet<String> edges = new EdgeExtractor(SAMPLE_SRC, BASE_PACKAGE).extract();
+        DependencyGraph graph = new EdgeExtractor(SAMPLE_SRC, BASE_PACKAGE).extract();
 
-        System.out.println("Edges (" + edges.size() + "):");
+        System.out.println("Nodes: " + graph.nodeCount() + ", Edges: " + graph.edgeCount());
         System.out.println("-".repeat(50));
-        edges.forEach(System.out::println);
+        graph.toEdgeStrings().forEach(System.out::println);
     }
 }
