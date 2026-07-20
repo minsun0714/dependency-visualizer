@@ -58,8 +58,8 @@ gradlePlugin {
             id = "io.github.minsun0714.dependency-visualizer"
             implementationClass = "com.minsun.plugin.DependencyVisualizerPlugin"
             displayName = "Dependency Visualizer"
-            description = "Java 프로젝트의 순환 의존(circular dependency)을 검출해 " +
-                "Mermaid/HTML 로 시각화하는 Gradle 플러그인"
+            description = "Detects and visualizes circular package and class " +
+                "dependencies in Java projects as Mermaid and HTML diagrams."
             tags = listOf("dependency", "circular-dependency", "visualization", "mermaid")
             // 태스크가 실행 시점에 project 참조 없이 lazy property + 순수 자바만
             // 사용하므로 configuration cache 와 호환된다.
