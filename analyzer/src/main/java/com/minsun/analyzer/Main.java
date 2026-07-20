@@ -2,7 +2,7 @@ package com.minsun.analyzer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.TreeSet;
+import java.util.List;
 
 public class Main {
 
@@ -16,10 +16,44 @@ public class Main {
         System.out.println("Analyzing " + SAMPLE_SRC + " ...");
         System.out.println();
 
-        TreeSet<String> edges = new EdgeExtractor(SAMPLE_SRC, BASE_PACKAGE).extract();
+        DependencyGraph graph = new EdgeExtractor(SAMPLE_SRC, BASE_PACKAGE).extract();
 
-        System.out.println("Edges (" + edges.size() + "):");
+        System.out.println("Nodes: " + graph.nodeCount() + ", Edges: " + graph.edgeCount());
         System.out.println("-".repeat(50));
-        edges.forEach(System.out::println);
+        graph.toEdgeStrings().forEach(System.out::println);
+
+        // 클래스 레벨 순환 (드릴다운 용)
+        List<List<String>> classCycles = TarjanScc.cycles(graph);
+        printCycles("Class-level circular dependencies", classCycles, "classes");
+
+        // 패키지 레벨 순환 (기본 뷰) — 같은 패키지 안에서만 얽힌 순환은 걸러진다
+        DependencyGraph packageGraph = PackageAggregator.aggregate(graph);
+        List<List<String>> packageCycles = TarjanScc.cycles(packageGraph);
+        printCycles("Package-level circular dependencies", packageCycles, "packages");
+
+        printMermaid("Mermaid (package level)", packageGraph, packageCycles, "packages");
+        printMermaid("Mermaid (class level)", graph, classCycles, "classes");
+    }
+
+    private static void printMermaid(String title, DependencyGraph graph,
+                                     List<List<String>> cycles, String unit) {
+        System.out.println();
+        System.out.println(title + ":");
+        System.out.println("-".repeat(50));
+        System.out.print(MermaidRenderer.renderCycles(graph, cycles, unit));
+    }
+
+    private static void printCycles(String title, List<List<String>> cycles, String unit) {
+        System.out.println();
+        System.out.println(title + " (" + cycles.size() + " SCC):");
+        System.out.println("-".repeat(50));
+        if (cycles.isEmpty()) {
+            System.out.println("(none)");
+            return;
+        }
+        for (int i = 0; i < cycles.size(); i++) {
+            List<String> scc = cycles.get(i);
+            System.out.println("[" + (i + 1) + "] " + scc.size() + " " + unit + ": " + scc);
+        }
     }
 }

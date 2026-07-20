@@ -23,7 +23,7 @@ class EdgeExtractorTest {
     Path sourceRoot;
 
     private TreeSet<String> extract() throws IOException {
-        return new EdgeExtractor(sourceRoot, BASE_PACKAGE).extract();
+        return new EdgeExtractor(sourceRoot, BASE_PACKAGE).extract().toEdgeStrings();
     }
 
     /** 패키지 선언에 맞는 디렉토리에 .java 파일을 심는다 (JavaParserTypeSolver 가 경로로 타입을 해석하므로 필수). */
