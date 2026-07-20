@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * 데모용 CLI 드라이버. 실제 파이프라인은 {@link CycleAnalysis} 가 담당하고,
+ * 여기서는 그 결과를 콘솔에 보기 좋게 찍기만 한다.
+ */
 public class Main {
 
     // 분석 대상 소스 루트 (일단 하드코딩 — Phase 7 플러그인화에서 파라미터화 예정)
@@ -16,31 +20,24 @@ public class Main {
         System.out.println("Analyzing " + SAMPLE_SRC + " ...");
         System.out.println();
 
-        DependencyGraph graph = new EdgeExtractor(SAMPLE_SRC, BASE_PACKAGE).extract();
+        CycleAnalysis analysis = CycleAnalysis.run(SAMPLE_SRC, BASE_PACKAGE);
 
+        DependencyGraph graph = analysis.classGraph();
         System.out.println("Nodes: " + graph.nodeCount() + ", Edges: " + graph.edgeCount());
         System.out.println("-".repeat(50));
         graph.toEdgeStrings().forEach(System.out::println);
 
-        // 클래스 레벨 순환 (드릴다운 용)
-        List<List<String>> classCycles = TarjanScc.cycles(graph);
-        printCycles("Class-level circular dependencies", classCycles, "classes");
+        printCycles("Class-level circular dependencies", analysis.classCycles(), "classes");
+        printCycles("Package-level circular dependencies", analysis.packageCycles(), "packages");
 
-        // 패키지 레벨 순환 (기본 뷰) — 같은 패키지 안에서만 얽힌 순환은 걸러진다
-        DependencyGraph packageGraph = PackageAggregator.aggregate(graph);
-        List<List<String>> packageCycles = TarjanScc.cycles(packageGraph);
-        printCycles("Package-level circular dependencies", packageCycles, "packages");
+        printMermaid("Mermaid (package level)", analysis.packageMermaid());
+        printMermaid("Mermaid (class level)", analysis.classMermaid());
 
-        printMermaid("Mermaid (package level)", packageGraph, packageCycles, "packages");
-        printMermaid("Mermaid (class level)", graph, classCycles, "classes");
-    }
-
-    private static void printMermaid(String title, DependencyGraph graph,
-                                     List<List<String>> cycles, String unit) {
+        // 리포트 파일 출력 (cycles-package.mmd / cycles-class.mmd / cycles.html)
+        Path outputDir = Path.of(".");
+        ReportWriter.write(analysis, outputDir);
         System.out.println();
-        System.out.println(title + ":");
-        System.out.println("-".repeat(50));
-        System.out.print(MermaidRenderer.renderCycles(graph, cycles, unit));
+        System.out.println("Report written: " + outputDir.resolve(ReportWriter.HTML).normalize().toAbsolutePath());
     }
 
     private static void printCycles(String title, List<List<String>> cycles, String unit) {
@@ -55,5 +52,12 @@ public class Main {
             List<String> scc = cycles.get(i);
             System.out.println("[" + (i + 1) + "] " + scc.size() + " " + unit + ": " + scc);
         }
+    }
+
+    private static void printMermaid(String title, String mermaid) {
+        System.out.println();
+        System.out.println(title + ":");
+        System.out.println("-".repeat(50));
+        System.out.print(mermaid);
     }
 }

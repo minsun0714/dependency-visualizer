@@ -1,26 +1,3 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <title>순환 의존 다이어그램</title>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <style>body{font-family:sans-serif;margin:24px}h2{margin-top:32px}</style>
-</head>
-<body>
-  <h1>Circular Dependencies</h1>
-  <h2>패키지 레벨 (기본 뷰 · 노이즈 필터링됨)</h2>
-  <pre class="mermaid">
-flowchart LR
-  subgraph scc0 ["Cycle 1 - 2 packages"]
-    n_com_minsun_sample_order["order"]
-    n_com_minsun_sample_user["user"]
-    n_com_minsun_sample_order --> n_com_minsun_sample_user
-    n_com_minsun_sample_user --> n_com_minsun_sample_order
-  end
-
-  </pre>
-  <h2>클래스 레벨 (드릴다운)</h2>
-  <pre class="mermaid">
 flowchart LR
   subgraph scc0 ["Cycle 1 - 2 classes"]
     n_com_minsun_sample_cycles_ctor_CtorA["CtorA"]
@@ -107,8 +84,3 @@ flowchart LR
     n_com_minsun_sample_product_InventoryService --> n_com_minsun_sample_product_ProductService
     n_com_minsun_sample_product_ProductService --> n_com_minsun_sample_product_InventoryService
   end
-
-  </pre>
-  <script>mermaid.initialize({startOnLoad:true});</script>
-</body>
-</html>
