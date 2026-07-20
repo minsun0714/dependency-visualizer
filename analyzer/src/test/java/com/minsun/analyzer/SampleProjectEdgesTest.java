@@ -23,33 +23,45 @@ class SampleProjectEdgesTest {
 
     private static final String BASE_PACKAGE = "com.minsun.sample";
 
-    /** 샘플이 만들어내야 하는 내부 의존 간선 전체 (필드 주입 + 생성자 주입 + 상속/구현). */
+    /**
+     * 샘플이 만들어내야 하는 내부 의존 간선 전체.
+     * 필드/생성자/세터 주입 + 상속/구현 + 메서드 시그니처(파라미터·반환) + new + 제네릭 인자까지 포함.
+     */
     private static final Set<String> EXPECTED_EDGES = Set.of(
-        // --- 필드 주입 (Lombok @RequiredArgsConstructor) ---
-        "com.minsun.sample.order.OrderController -> com.minsun.sample.order.OrderService",
-        "com.minsun.sample.order.OrderService -> com.minsun.sample.order.OrderRepository",
-        "com.minsun.sample.order.OrderService -> com.minsun.sample.product.ProductService",
-        "com.minsun.sample.order.OrderService -> com.minsun.sample.shared.PriceCalculator",
-        "com.minsun.sample.order.OrderService -> com.minsun.sample.user.UserService",
+        // --- order ---
+        "com.minsun.sample.order.OrderController -> com.minsun.sample.order.Order",           // 반환 타입
+        "com.minsun.sample.order.OrderController -> com.minsun.sample.order.OrderService",     // 필드 주입
+        "com.minsun.sample.order.OrderController -> com.minsun.sample.shared.BaseController",   // 상속
+        "com.minsun.sample.order.OrderRepository -> com.minsun.sample.order.Order",            // 메서드 시그니처
+        "com.minsun.sample.order.OrderService -> com.minsun.sample.order.Order",               // 반환 타입 + new Order
+        "com.minsun.sample.order.OrderService -> com.minsun.sample.order.OrderRepository",     // 필드 주입
+        "com.minsun.sample.order.OrderService -> com.minsun.sample.product.ProductService",    // 필드 주입 (cross-domain)
+        "com.minsun.sample.order.OrderService -> com.minsun.sample.shared.PriceCalculator",    // 필드 주입
+        "com.minsun.sample.order.OrderService -> com.minsun.sample.user.UserService",          // 필드 주입 (SCC A)
+        // --- product ---
         "com.minsun.sample.product.InventoryService -> com.minsun.sample.product.ProductRepository",
-        "com.minsun.sample.product.InventoryService -> com.minsun.sample.product.ProductService",
+        "com.minsun.sample.product.InventoryService -> com.minsun.sample.product.ProductService", // (SCC B)
+        "com.minsun.sample.product.ProductController -> com.minsun.sample.product.Product",         // 반환 타입
         "com.minsun.sample.product.ProductController -> com.minsun.sample.product.ProductService",
-        "com.minsun.sample.product.ProductService -> com.minsun.sample.product.InventoryService",
+        "com.minsun.sample.product.ProductController -> com.minsun.sample.shared.BaseController",   // 상속
+        "com.minsun.sample.product.ProductRepository -> com.minsun.sample.product.Product",         // 메서드 시그니처
+        "com.minsun.sample.product.ProductService -> com.minsun.sample.product.InventoryService",   // (SCC B)
+        "com.minsun.sample.product.ProductService -> com.minsun.sample.product.Product",            // 반환 타입
         "com.minsun.sample.product.ProductService -> com.minsun.sample.product.ProductRepository",
         "com.minsun.sample.product.ProductService -> com.minsun.sample.shared.PriceCalculator",
+        // --- shared ---
+        "com.minsun.sample.shared.EmailSender -> com.minsun.sample.shared.Notifier",                // 구현
+        // --- user ---
+        "com.minsun.sample.user.NotificationService -> com.minsun.sample.shared.Notifier",          // 생성자 주입
+        "com.minsun.sample.user.NotificationService -> com.minsun.sample.user.UserRepository",       // 생성자 주입
+        "com.minsun.sample.user.UserController -> com.minsun.sample.shared.BaseController",          // 상속
+        "com.minsun.sample.user.UserController -> com.minsun.sample.user.User",                      // 반환 타입
         "com.minsun.sample.user.UserController -> com.minsun.sample.user.UserService",
-        "com.minsun.sample.user.UserService -> com.minsun.sample.order.OrderService",
+        "com.minsun.sample.user.UserRepository -> com.minsun.sample.user.User",                      // 메서드 시그니처
+        "com.minsun.sample.user.UserService -> com.minsun.sample.order.OrderService",                // 필드 주입 (SCC A)
         "com.minsun.sample.user.UserService -> com.minsun.sample.shared.EmailSender",
-        "com.minsun.sample.user.UserService -> com.minsun.sample.user.UserRepository",
-        // --- 생성자 주입 (Lombok 미사용, NotificationService) ---
-        "com.minsun.sample.user.NotificationService -> com.minsun.sample.shared.Notifier",
-        "com.minsun.sample.user.NotificationService -> com.minsun.sample.user.UserRepository",
-        // --- 상속 (extends BaseController) ---
-        "com.minsun.sample.order.OrderController -> com.minsun.sample.shared.BaseController",
-        "com.minsun.sample.product.ProductController -> com.minsun.sample.shared.BaseController",
-        "com.minsun.sample.user.UserController -> com.minsun.sample.shared.BaseController",
-        // --- 구현 (EmailSender implements Notifier) ---
-        "com.minsun.sample.shared.EmailSender -> com.minsun.sample.shared.Notifier"
+        "com.minsun.sample.user.UserService -> com.minsun.sample.user.User",                         // 반환 타입
+        "com.minsun.sample.user.UserService -> com.minsun.sample.user.UserRepository"
     );
 
     @Test

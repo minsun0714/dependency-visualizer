@@ -183,6 +183,81 @@ class EdgeExtractorTest {
     }
 
     @Test
+    @DisplayName("제네릭 타입 인자(List<Order>, Map<Long, Product>) 안의 내부 타입도 간선으로 잡는다")
+    void extractsGenericTypeArguments() throws IOException {
+        writeClass("com.minsun.sample.order", "Order",
+            "public class Order {}");
+        writeClass("com.minsun.sample.product", "Product",
+            "public class Product {}");
+        writeClass("com.minsun.sample.order", "OrderRepository",
+            "import com.minsun.sample.product.Product;\n" +
+            "import java.util.List;\n" +
+            "import java.util.Map;\n\n" +
+            "public class OrderRepository {\n" +
+            "    private final List<Order> orders = null;\n" +
+            "    private final Map<Long, Product> productById = null;\n" +
+            "}");
+
+        TreeSet<String> edges = extract();
+
+        assertTrue(edges.contains(
+            "com.minsun.sample.order.OrderRepository -> com.minsun.sample.order.Order"),
+            () -> "List<Order> 의 Order 간선이 있어야 함. 실제: " + edges);
+        assertTrue(edges.contains(
+            "com.minsun.sample.order.OrderRepository -> com.minsun.sample.product.Product"),
+            () -> "Map<Long, Product> 의 Product 간선이 있어야 함. 실제: " + edges);
+        // 컨테이너 타입(java.util.List/Map)은 외부라 간선에서 제외
+        assertFalse(edges.stream().anyMatch(e -> e.contains("java.util")), edges::toString);
+    }
+
+    @Test
+    @DisplayName("메서드 파라미터/반환 타입(세터 주입 포함)을 간선으로 잡는다")
+    void extractsMethodSignatureTypes() throws IOException {
+        writeClass("com.minsun.sample.user", "User",
+            "public class User {}");
+        writeClass("com.minsun.sample.user", "UserRepository",
+            "public class UserRepository {}");
+        writeClass("com.minsun.sample.user", "UserService",
+            "public class UserService {\n" +
+            "    private UserRepository repository;\n" +
+            "    public void setRepository(UserRepository repository) {\n" + // 세터 주입 (파라미터 타입)
+            "        this.repository = repository;\n" +
+            "    }\n" +
+            "    public User findUser(Long id) {\n" +                        // 반환 타입
+            "        return null;\n" +
+            "    }\n" +
+            "}");
+
+        TreeSet<String> edges = extract();
+
+        assertTrue(edges.contains(
+            "com.minsun.sample.user.UserService -> com.minsun.sample.user.UserRepository"),
+            () -> "세터 파라미터 간선이 있어야 함. 실제: " + edges);
+        assertTrue(edges.contains(
+            "com.minsun.sample.user.UserService -> com.minsun.sample.user.User"),
+            () -> "반환 타입 간선이 있어야 함. 실제: " + edges);
+    }
+
+    @Test
+    @DisplayName("메서드 본문의 객체 생성(new Xxx()) 을 간선으로 잡는다")
+    void extractsObjectCreation() throws IOException {
+        writeClass("com.minsun.sample.order", "OrderValidator",
+            "public class OrderValidator {}");
+        writeClass("com.minsun.sample.order", "OrderService",
+            "public class OrderService {\n" +
+            "    public void validate() {\n" +
+            "        OrderValidator validator = new OrderValidator();\n" +
+            "    }\n" +
+            "}");
+
+        TreeSet<String> edges = extract();
+
+        assertTrue(edges.contains(
+            "com.minsun.sample.order.OrderService -> com.minsun.sample.order.OrderValidator"),
+            () -> "new OrderValidator() 간선이 있어야 함. 실제: " + edges);
+    }
+
+    @Test
     @DisplayName("소스가 없으면 빈 결과를 반환한다")
     void returnsEmptyForNoSources() throws IOException {
         assertTrue(extract().isEmpty());

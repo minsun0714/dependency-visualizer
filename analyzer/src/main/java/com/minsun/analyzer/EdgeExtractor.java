@@ -6,7 +6,9 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.types.ResolvedType;
@@ -59,12 +61,15 @@ public class EdgeExtractor {
 
     /**
      * 한 클래스의 의존 타입들을 resolve 해서 내부 의존 간선(from -> to)을 뽑는다.
-     * 아래 세 경로를 모두 의존으로 본다:
+     * 아래 경로를 모두 의존으로 본다:
      * <ul>
      *   <li>필드 주입 — {@code private final XxxService} (Lombok @RequiredArgsConstructor 포함)</li>
      *   <li>생성자 주입 — {@code XxxService(YyyRepository repo)} 파라미터 (Lombok 안 쓰는 표준 패턴)</li>
+     *   <li>메서드 시그니처 — 파라미터 타입(세터 주입 포함) + 반환 타입</li>
      *   <li>상속/구현 — {@code extends}, {@code implements}</li>
+     *   <li>객체 생성 — {@code new Xxx()}</li>
      * </ul>
+     * 위 모든 타입의 <b>제네릭 타입 인자</b>({@code List<Order>} 의 Order 등)도 재귀적으로 본다.
      */
     void extractEdges(ClassOrInterfaceDeclaration type, TreeSet<String> edges) {
         String source = type.getFullyQualifiedName().orElse(type.getNameAsString());
@@ -81,33 +86,59 @@ public class EdgeExtractor {
             }
         }
 
-        // 3. 상속 / 구현
+        // 3. 메서드 시그니처 (파라미터 + 반환 타입). void/primitive 반환은 resolve 단계에서 걸러진다.
+        for (MethodDeclaration method : type.getMethods()) {
+            tryAddEdge(source, method.getType(), edges);
+            for (Parameter param : method.getParameters()) {
+                tryAddEdge(source, param.getType(), edges);
+            }
+        }
+
+        // 4. 상속 / 구현
         for (ClassOrInterfaceType extended : type.getExtendedTypes()) {
             tryAddEdge(source, extended, edges);
         }
         for (ClassOrInterfaceType implemented : type.getImplementedTypes()) {
             tryAddEdge(source, implemented, edges);
         }
+
+        // 5. 객체 생성 (new Xxx()) — 메서드 본문 등에서 직접 생성하는 의존
+        for (ObjectCreationExpr creation : type.findAll(ObjectCreationExpr.class)) {
+            tryAddEdge(source, creation.getType(), edges);
+        }
     }
 
     /**
      * 타입 노드를 resolve 해서 내부 타입이면 간선으로 추가한다.
-     * resolve 실패(외부 타입 등)나 자기 자신 참조는 조용히 건너뛴다.
+     * resolve 실패(외부 타입 등)는 조용히 건너뛴다.
      */
     private void tryAddEdge(String source, Type typeNode, TreeSet<String> edges) {
         try {
-            ResolvedType resolved = typeNode.resolve();
-            if (!resolved.isReferenceType()) {
-                return; // primitive 등은 의존 대상이 아님
-            }
-            String target = resolved.asReferenceType().getQualifiedName();
-
-            // 내부 타입만 채택, 자기 자신 참조는 제외
-            if (target.startsWith(basePackage) && !target.equals(source)) {
-                edges.add(source + " -> " + target);
-            }
+            addResolved(source, typeNode.resolve(), edges);
         } catch (RuntimeException e) {
             // 사전(TypeSolver)에 없는 타입 등 resolve 실패 → 내부 타입 아님, 무시
+        }
+    }
+
+    /**
+     * resolve 된 타입을 훑어 내부 참조 타입이면 간선으로 추가한다.
+     * 제네릭 타입 인자({@code Map<Long, Product>} 의 Product 등)도 재귀적으로 본다.
+     * 자기 자신 참조는 제외한다.
+     */
+    private void addResolved(String source, ResolvedType resolved, TreeSet<String> edges) {
+        if (!resolved.isReferenceType()) {
+            return; // primitive / void / 타입변수 등은 의존 대상이 아님
+        }
+        var ref = resolved.asReferenceType();
+
+        String target = ref.getQualifiedName();
+        if (target.startsWith(basePackage) && !target.equals(source)) {
+            edges.add(source + " -> " + target);
+        }
+
+        // 제네릭 타입 인자 재귀 (List<Order>, Optional<User>, Map<Long, Product> ...)
+        for (ResolvedType typeArg : ref.typeParametersValues()) {
+            addResolved(source, typeArg, edges);
         }
     }
 
