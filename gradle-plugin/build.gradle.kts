@@ -9,12 +9,17 @@ plugins {
 // Plugin Portal 은 정식 릴리스만 받는다(SNAPSHOT 금지). 네임스페이스는
 // GitHub 계정에 매핑되는 io.github.<user> 를 쓴다.
 group = "io.github.minsun0714"
-version = "0.1.1"
+version = "0.1.2"
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
+}
+
+// 대상 프로젝트가 JDK 17 에서 Gradle 을 돌려도 플러그인이 로드되도록 Java 17 타깃.
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(17)
 }
 
 // analyzer 는 개발/테스트에선 참조하되, 배포 아티팩트에는 "의존성"이 아니라
