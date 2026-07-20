@@ -52,6 +52,58 @@ class EdgeExtractorTest {
     }
 
     @Test
+    @DisplayName("생성자 주입 파라미터(Lombok 미사용 표준 패턴)를 간선으로 잡는다")
+    void extractsConstructorInjectionEdge() throws IOException {
+        writeClass("com.minsun.sample.order", "OrderRepository",
+            "public class OrderRepository {}");
+        writeClass("com.minsun.sample.order", "OrderService",
+            "public class OrderService {\n" +
+            "    private final OrderRepository repository;\n" +
+            "    public OrderService(OrderRepository repository) {\n" +
+            "        this.repository = repository;\n" +
+            "    }\n" +
+            "}");
+
+        TreeSet<String> edges = extract();
+
+        assertTrue(edges.contains(
+            "com.minsun.sample.order.OrderService -> com.minsun.sample.order.OrderRepository"),
+            () -> "생성자 주입 간선이 있어야 함. 실제: " + edges);
+    }
+
+    @Test
+    @DisplayName("상속(extends) 을 간선으로 잡는다")
+    void extractsExtendsEdge() throws IOException {
+        writeClass("com.minsun.sample.shared", "BaseService",
+            "public class BaseService {}");
+        writeClass("com.minsun.sample.user", "UserService",
+            "import com.minsun.sample.shared.BaseService;\n\n" +
+            "public class UserService extends BaseService {}");
+
+        TreeSet<String> edges = extract();
+
+        assertTrue(edges.contains(
+            "com.minsun.sample.user.UserService -> com.minsun.sample.shared.BaseService"),
+            () -> "상속 간선이 있어야 함. 실제: " + edges);
+    }
+
+    @Test
+    @DisplayName("구현(implements) 을 간선으로 잡는다")
+    void extractsImplementsEdge() throws IOException {
+        writeClass("com.minsun.sample.shared", "Notifier",
+            "public interface Notifier {}");
+        writeClass("com.minsun.sample.user", "EmailNotifier",
+            "import com.minsun.sample.shared.Notifier;\n\n" +
+            "public class EmailNotifier implements Notifier {}");
+
+        TreeSet<String> edges = extract();
+
+        assertTrue(edges.contains(
+            "com.minsun.sample.user.EmailNotifier -> com.minsun.sample.shared.Notifier"),
+            () -> "구현 간선이 있어야 함. 실제: " + edges);
+    }
+
+    @Test
     @DisplayName("BASE_PACKAGE 밖의 외부 타입(java.util.List 등)은 간선에서 제외한다")
     void excludesExternalTypes() throws IOException {
         writeClass("com.minsun.sample.user", "UserService",

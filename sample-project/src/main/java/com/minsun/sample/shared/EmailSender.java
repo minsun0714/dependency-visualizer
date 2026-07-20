@@ -3,9 +3,10 @@ package com.minsun.sample.shared;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailSender {
+public class EmailSender implements Notifier {
 
-    public void send(String to, String body) {
+    @Override
+    public void send(String to, String message) {
         // no-op
     }
 }
