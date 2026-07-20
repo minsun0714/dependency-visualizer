@@ -32,6 +32,12 @@ public class Main {
 
         printMermaid("Mermaid (package level)", analysis.packageMermaid());
         printMermaid("Mermaid (class level)", analysis.classMermaid());
+
+        // 리포트 파일 출력 (cycles-package.mmd / cycles-class.mmd / cycles.html)
+        Path outputDir = Path.of(".");
+        ReportWriter.write(analysis, outputDir);
+        System.out.println();
+        System.out.println("Report written: " + outputDir.resolve(ReportWriter.HTML).normalize().toAbsolutePath());
     }
 
     private static void printCycles(String title, List<List<String>> cycles, String unit) {

@@ -1,0 +1,7 @@
+flowchart LR
+  subgraph scc0 ["Cycle 1 - 2 packages"]
+    n_com_minsun_sample_order["order"]
+    n_com_minsun_sample_user["user"]
+    n_com_minsun_sample_order --> n_com_minsun_sample_user
+    n_com_minsun_sample_user --> n_com_minsun_sample_order
+  end
