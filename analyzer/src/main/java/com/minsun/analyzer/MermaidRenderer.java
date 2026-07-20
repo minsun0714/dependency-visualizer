@@ -17,10 +17,18 @@ public final class MermaidRenderer {
     }
 
     /**
-     * 순환 SCC 목록을 Mermaid flowchart 문자열로 만든다.
+     * 순환 SCC 목록을 Mermaid flowchart 문자열로 만든다 (노드 단위는 {@code "classes"}).
      * {@code cycles} 는 {@link TarjanScc#cycles(DependencyGraph)} 의 결과를 기대한다.
      */
     public static String renderCycles(DependencyGraph graph, List<List<String>> cycles) {
+        return renderCycles(graph, cycles, "classes");
+    }
+
+    /**
+     * 순환 SCC 목록을 Mermaid flowchart 문자열로 만든다.
+     * {@code unit} 은 subgraph 라벨에 쓰일 노드 단위 (예: {@code "classes"}, {@code "packages"}).
+     */
+    public static String renderCycles(DependencyGraph graph, List<List<String>> cycles, String unit) {
         StringBuilder sb = new StringBuilder();
         sb.append("flowchart LR\n");
 
@@ -34,7 +42,8 @@ public final class MermaidRenderer {
             Set<String> members = new HashSet<>(scc);
 
             sb.append("  subgraph scc").append(i)
-                .append(" [\"Cycle ").append(i + 1).append(" - ").append(scc.size()).append(" classes\"]\n");
+                .append(" [\"Cycle ").append(i + 1).append(" - ").append(scc.size())
+                .append(" ").append(unit).append("\"]\n");
 
             // 노드 선언 (SCC 정렬 순서)
             for (String node : scc) {
